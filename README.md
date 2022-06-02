@@ -1,6 +1,6 @@
 # NFT-Staking
 
-All the contracts for NFT staking and Wrapped NFT.
+All the contracts for NFT staking and Wrapped NFT on StarBlock DAO.
 
 # NFTMasterChef Contract
 NFTMasterChef is the core contract of NFT staking and contains the main logic of staking NFT: reward and dividend. Every NFT Collection will have a pool in NFTMasterChef, which is responsible for ditributing the StarBlock Token: STB to all the staked NFTs in the pool.
