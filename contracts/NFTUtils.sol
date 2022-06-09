@@ -102,28 +102,52 @@ contract NFTUtils {
 
     function getNFTMasterChefInfos(INFTMasterChef _nftMasterchef, uint256 _pid, address _owner, uint256 _fromTokenId, uint256 _toTokenId) external view
                 returns (INFTMasterChef.PoolInfo memory _poolInfo, INFTMasterChef.RewardInfo memory _rewardInfo, UserInfo memory _userInfo, 
-                        uint256 _currentRewardIndex, uint256 _endBlock, IERC721Metadata _nft)
-     {
+                        uint256 _currentRewardIndex, uint256 _endBlock, IERC721Metadata _nft) {
         require(address(_nftMasterchef) != address(0), "NFTUtils: nftMasterchef can not be zero");
-        // INFTMasterChef nftMasterchef = _nftMasterchef; 
         _poolInfo = _nftMasterchef.poolInfos(_pid);
         (_rewardInfo, _currentRewardIndex)  = _nftMasterchef.getPoolCurrentReward(_pid);
         _endBlock = _nftMasterchef.getPoolEndBlock(_pid);
-
-       if (_owner != address(0)) {
-         uint256[] memory wnftTokenIds = ownedNFTTokens(_poolInfo.wnft, _owner, _fromTokenId, _toTokenId);
-         _userInfo = UserInfo({mining: 0, dividend: 0, nftQuantity: 0, wnftQuantity: 0, isNFTApproved: false, isWNFTApproved: false});
-         if (wnftTokenIds.length > 0) {
-             (_userInfo.mining, _userInfo.dividend) = _nftMasterchef.pending(_pid, wnftTokenIds);
-         }
-    
-         IWrappedNFT wnft = _poolInfo.wnft;
-         _userInfo.nftQuantity = wnft.nft().balanceOf(_owner);
-         _userInfo.wnftQuantity = wnft.balanceOf(_owner);
-         _userInfo.isNFTApproved = wnft.nft().isApprovedForAll(_owner, address(wnft));
-         _userInfo.isWNFTApproved = wnft.isApprovedForAll(_owner, address(_nftMasterchef));
-         _nft = wnft.nft();
+        _nft = _poolInfo.wnft.nft();
+        
+        if (_owner != address(0)) {
+            uint256[] memory wnftTokenIds = ownedNFTTokens(_poolInfo.wnft, _owner, _fromTokenId, _toTokenId);
+            _userInfo = UserInfo({mining: 0, dividend: 0, nftQuantity: 0, wnftQuantity: 0, isNFTApproved: false, isWNFTApproved: false});
+            if (wnftTokenIds.length > 0) {
+                (_userInfo.mining, _userInfo.dividend) = _nftMasterchef.pending(_pid, wnftTokenIds);
+            }
+        
+            IWrappedNFT wnft = _poolInfo.wnft;
+            _userInfo.nftQuantity = wnft.nft().balanceOf(_owner);
+            _userInfo.wnftQuantity = wnft.balanceOf(_owner);
+            _userInfo.isNFTApproved = wnft.nft().isApprovedForAll(_owner, address(wnft));
+            _userInfo.isWNFTApproved = wnft.isApprovedForAll(_owner, address(_nftMasterchef)); 
        }
+    }
+
+    function pendingAll(INFTMasterChef _nftMasterchef, address _forUser, uint256[] memory _pids, uint256[][] memory _tokenIdRange) external view returns (uint256 _mining, uint256 _dividend) {
+        require(address(_nftMasterchef) != address(0) && _pids.length > 0 && _pids.length == _tokenIdRange.length, "NFTUtils: invalid parameters!");
+        for(uint256 index = 0; index < _pids.length; index ++){
+            uint256 pid = _pids[index];
+            INFTMasterChef.PoolInfo memory poolInfo = _nftMasterchef.poolInfos(pid);
+            uint256[] memory wnftTokenIds = ownedNFTTokens(poolInfo.wnft, _forUser, _tokenIdRange[index][0], _tokenIdRange[index][1]);
+            if (wnftTokenIds.length > 0) {
+                (uint256 mining, uint256 dividend) = _nftMasterchef.pending(pid, wnftTokenIds);
+                _mining += mining;
+                _dividend += dividend;
+            }
+        }
+    }
+
+    function harvestAll(INFTMasterChef _nftMasterchef, address _forUser, uint256[] memory _pids, uint256[][] memory _tokenIdRange) external {
+        require(address(_nftMasterchef) != address(0) && _pids.length > 0 && _pids.length == _tokenIdRange.length, "NFTUtils: invalid parameters!");
+        for(uint256 index = 0; index < _pids.length; index ++){
+            uint256 pid = _pids[index];
+            INFTMasterChef.PoolInfo memory poolInfo = _nftMasterchef.poolInfos(pid);
+            uint256[] memory wnftTokenIds = ownedNFTTokens(poolInfo.wnft, _forUser, _tokenIdRange[index][0], _tokenIdRange[index][1]);
+            if (wnftTokenIds.length > 0) {
+                _nftMasterchef.harvest(pid, _forUser, wnftTokenIds);
+            }
+        }
     }
 
     function ownedNFTTokens(IERC721 _nft, address _owner, uint256 _fromTokenId, uint256 _toTokenId) public view returns (uint256[] memory _totalTokenIds) {
