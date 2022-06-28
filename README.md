@@ -3,10 +3,10 @@
 All the contracts for NFT staking and Wrapped NFT on StarBlock DAO.
 
 # NFTMasterChef Contract
-NFTMasterChef is the core contract of NFT staking and contains the main logic of staking NFT: reward and dividend. Every NFT Collection will have a pool in NFTMasterChef, which is responsible for ditributing the StarBlock Token: STB to all the staked NFTs in the pool.
+NFTMasterChef is the core contract of NFT farming on StarBlock DAO and contains the main logic of staking NFT: reward and dividend. Every NFT Collection will have a pool in NFTMasterChef, which is responsible for distributing the StarBlock Token: STB to all the staked NFTs in the pool.
 
 # WrappedNFTFactory Contract
-WrappedNFTFactory is the contract to deploy Wrapped NFT Collection, which is used to wrap NFT. Every NFT contract will have a Wrapped NFT contract and every token ID in NFT collection can be wrapped to an Wrapp NFT in the Wrapp NFT collection with the same token ID. Also the Wrapp NFT can be unwapped to the NFT with the same token ID anytime without any permission. If you own a Wrapped NFT, you own the NFT with the same token ID indirectly which is managed by the Wrapped NFT contract. Nobody can unwrapped an Wrapped NFT without a NFT with the same token ID.
+WrappedNFTFactory is the contract to deploy Wrapped NFT(short as WNFT) Collection contract on StarBlock DAO, which is the wrapped collection of original NFT collection. Wrapped NFT is equivalent to the original NFT and can be traded arbitrarily, 1 WNFT = 1 Original NFT.
 
 # NFTUtils Contract
 NFTUtils is a multi-reading contract for the data in NFTMasterChef and other contracts, which is used for the frontend to merge multi-calls.
